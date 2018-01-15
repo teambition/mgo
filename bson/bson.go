@@ -190,7 +190,7 @@ func IsObjectIdHex(s string) bool {
 
 // objectIdCounter is atomically incremented when generating a new ObjectId
 // using NewObjectId() function. It's used as a counter part of an id.
-var objectIdCounter uint32 = readRandomUint32()
+var objectIdCounter = readRandomUint32()
 
 // readRandomUint32 returns a random objectIdCounter.
 func readRandomUint32() uint32 {
@@ -279,7 +279,7 @@ var nullBytes = []byte("null")
 func (id *ObjectId) UnmarshalJSON(data []byte) error {
 	if len(data) > 0 && (data[0] == '{' || data[0] == 'O') {
 		var v struct {
-			Id json.RawMessage `json:"$oid"`
+			Id   json.RawMessage `json:"$oid"`
 			Func struct {
 				Id json.RawMessage
 			} `json:"$oidFunc"`
@@ -384,7 +384,11 @@ type Symbol string
 // why this function exists. Using the time.Now function also works fine
 // otherwise.
 func Now() time.Time {
-	return time.Unix(0, time.Now().UnixNano()/1e6*1e6)
+	ms := time.Now().UnixNano() / 1e6
+	if ms%10 == 0 {
+		ms += 1
+	}
+	return time.Unix(0, ms*1e6)
 }
 
 // MongoTimestamp is a special internal type used by MongoDB that for some
